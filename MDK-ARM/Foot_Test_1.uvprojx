@@ -544,24 +544,9 @@
               <FilePath>..\..\..\..\RM_LIB(Don_t delete)\Robot\Src\CANDrive.c</FilePath>
             </File>
             <File>
-              <FileName>CRC.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\LIB\Src\CRC.c</FilePath>
-            </File>
-            <File>
               <FileName>csys.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\LIB\Src\csys.c</FilePath>
-            </File>
-            <File>
-              <FileName>ramp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\LIB\Src\ramp.c</FilePath>
-            </File>
-            <File>
-              <FileName>WatchDog.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\LIB\Src\WatchDog.c</FilePath>
             </File>
             <File>
               <FileName>motor.c</FileName>
@@ -602,6 +587,21 @@
               <FileName>my_ramp.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\LIB\Src\my_ramp.c</FilePath>
+            </File>
+            <File>
+              <FileName>CRC.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\RM_LIB(Don_t delete)\Robot\Src\CRC.c</FilePath>
+            </File>
+            <File>
+              <FileName>ramp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\RM_LIB(Don_t delete)\Robot\Src\ramp.c</FilePath>
+            </File>
+            <File>
+              <FileName>WatchDog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\RM_LIB(Don_t delete)\Robot\Src\WatchDog.c</FilePath>
             </File>
           </Files>
         </Group>
