@@ -69,83 +69,6 @@ void CSYS_Init()
 	
 }
 
-
-/**
-	*@brief 四足腿（相对于坐标系原点）画直线,获取小腿与y轴的角度
-	*@param[in] x 在x轴方向上相对于坐标系原点的距离
-	*@param[in] Ramp 斜坡函数句柄
-	*@return theta 两个电机相对于坐标系y轴的期望角度
-	*/
-CSYS_Handle Foot_Line_RTO_Get_Theta(float x)
-{
-	CSYS_Handle theta;
-	float mid_theta = asinf(((L1/L2)*sinf(50.0f*((PI/180.0f)))));
-	float y = L1*cosf(50.0f*(PI)/180.0f) + L2 * cos(mid_theta);
-	float L = sqrtf(x*x+y*y);
-	float Psi = asinf(x/L);
-	float Phi = acosf((L1*L1 + L*L - L2*L2)/(2.0f*L1*L));
-	theta.theta1 = (Phi-Psi)*EXCHANGE_RAD_TO_ANGLE;
-	theta.theta2 = (Phi+Psi)*EXCHANGE_RAD_TO_ANGLE;
-  return theta;
-}
-
-//临时使用
-CSYS_Handle Foot_Line_RTO_Right_To_Left_Theta_Ramp(float x,Ramp_Typedef *Ramp)
-{
-	CSYS_Handle theta;
-	float mid_theta = asinf(((L1/L2)*sinf(50.0f*((PI/180.0f)))));
-	float y = L1*cosf(50.0f*(PI)/180.0f) + L2 * cosf(mid_theta);
-	float L = sqrtf((x*(1.0f-Slope(Ramp))*x*(1.0f-Slope(Ramp))+y*y));
-	float Psi = asinf(x*(1.0f-Slope(Ramp))/L);
-	float Phi = acosf((L1*L1 + L*L - L2*L2)/(2.0f*L1*L));
-	theta.theta1 = (Phi-Psi)*EXCHANGE_RAD_TO_ANGLE;
-	theta.theta2 = (Phi+Psi)*EXCHANGE_RAD_TO_ANGLE;
-  return theta;
-}
-
-CSYS_Handle Foot_Line_RTO_Get_Theta_Ramp(float x,Ramp_Typedef *Ramp)
-{
-	CSYS_Handle theta;
-	float mid_theta = asinf(((L1/L2)*sinf(50.0f*((PI/180.0f)))));
-	float y = L1*cosf(50.0f*(PI)/180.0f) + L2 * cosf(mid_theta);
-	float L = sqrtf((x*Slope(Ramp)*x*Slope(Ramp)+y*y));
-	float Psi = asinf((x*Slope(Ramp)/L));
-	float Phi = acosf((L1*L1 + L*L - L2*L2)/(2.0f*L1*L));
-	theta.theta1 = (Phi-Psi)*EXCHANGE_RAD_TO_ANGLE;
-	theta.theta2 = (Phi+Psi)*EXCHANGE_RAD_TO_ANGLE;
-  return theta;
-}
-
-
-/**
-	*@brief 四足腿（相对于坐标系原点）正向画椭圆,获取两个小腿与y轴的角度
-	*@solve (x^2)/(a^2) + (y^2)/(b^2) = 1
-	*@param[in] a 椭圆半长轴
-	*@param[in] b 椭圆半短轴
-	*@param[in] Ramp 斜坡函数句柄
-	*@return theta[theta1,theta2] 两个电机相对于坐标系y轴的期望角度
-	*/
-CSYS_Handle Foot_Oval_RTO_Get_Theta_Ramp(float a,float b,Ramp_Typedef *Ramp)
-{ 
-	CSYS_Handle theta;
-	static float init_y;
-	const float mid_theta = asinf(((L1/L2)*sinf(50.0f*((PI/180.0f)))));
-	init_y = L1*cosf(50.0f*(PI)/180.0f) + L2 *cosf(mid_theta);
-	const float init_x = 0;
-	float real_theta = PI * (1.0f-Slope(Ramp));			
-	float oval_x = real_theta < (PI/2.0f) ? sqrtf(1.0f/(powf(a,-2)+powf(tanf(real_theta)/b,2))) : real_theta == (PI/2.0f) 
-								? 0 : -sqrtf(1.0f/(powf(a,-2)+powf(tanf(real_theta)/b,2)));
-	float oval_y = real_theta != (PI/2.0f) ? oval_x * tanf(real_theta) : b;
-	float x = init_x + oval_x;
-	float y = init_y - oval_y;
-	float L = sqrtf(x*x+y*y);
-	float Psi = asinf(x/L);
-	float Phi = acosf((L1*L1 + L*L - L2*L2)/(2*L1*L));
-	theta.theta1 = (Phi-Psi)*EXCHANGE_RAD_TO_ANGLE;
-	theta.theta2 = (Phi+Psi)*EXCHANGE_RAD_TO_ANGLE;
-  return theta;
-}
-
 /**
 	*@breif 		利用一元二次方程求解当前腿长L(L>0)
 	*@solve 		Ax^2+Bx+C=0
@@ -917,29 +840,6 @@ CSYS_Handle Foot_Back_Up_Oval_Angle_NRTO_ramp(float a,float b,float Angle,CSYS_H
 	return *CSYS;
 }
 
-CSYS_Handle Foot_Round_X_RTO_ramp(float x,float y,float Vector_x,CSYS_Handle *CSYS,Ramp_Typedef *Ramp)
-{
-	static float initial_x[4];
-	static float initial_y[4];
-	static float initial_L[4];
-	static float initial_theta_1;
-	static float initial_theta_2;
-	static float initial_Psi[4];
-	static float D_Value_Psi[4];
-	static float Infer_Psi;
-	static float ramp_t;
-	if(!Ramp->flag)
-	{
-		initial_x[CSYS->ID-1] = x;
-		initial_y[CSYS->ID-1] = y;
-		initial_L[CSYS->ID-1] = sqrtf(x*x+(Motor_y+y)*(Motor_y+y));
-		initial_Psi[CSYS->ID-1] = asinf(x/initial_L[CSYS->ID-1]);
-		D_Value_Psi[CSYS->ID-1] = asinf((initial_x[CSYS->ID-1] - Vector_x)/initial_L[CSYS->ID-1]) - initial_Psi[CSYS->ID-1];
-		
-	}
-	return *CSYS;
-}
-
 /**
 	*@brief  绕足尖旋转，腿长固定不动
 	*@param[in] Vector_x 目标点与当前点的x坐标向量
@@ -951,7 +851,6 @@ CSYS_Handle Foot_Round_X_RTO_ramp(float x,float y,float Vector_x,CSYS_Handle *CS
 CSYS_Handle Foot_Round_X_NRTO_ramp(float Vector_x,CSYS_Handle *CSYS,Ramp_Typedef *Ramp)
 {
 	static float initial_x[4];									//足尖初始x坐标
-	static float initial_y[4];									//足尖初始y坐标
 	static float initial_L[4];
 	static float initial_theta_1[4];
 	static float initial_theta_2[4];
@@ -962,7 +861,6 @@ CSYS_Handle Foot_Round_X_NRTO_ramp(float Vector_x,CSYS_Handle *CSYS,Ramp_Typedef
 	if(!Ramp->flag)
 	{
 		initial_x[CSYS->ID-1] = CSYS->x;
-		initial_y[CSYS->ID-1] = CSYS->y;
 		initial_L[CSYS->ID-1] = CSYS->L;
 		initial_Psi[CSYS->ID-1] = CSYS->Psi;
 		initial_theta_1[CSYS->ID-1] = CSYS->theta1;
@@ -978,123 +876,6 @@ CSYS_Handle Foot_Round_X_NRTO_ramp(float Vector_x,CSYS_Handle *CSYS,Ramp_Typedef
 	CSYS->Infer_theta2 = initial_theta_2[CSYS->ID-1] + D_Value_Psi[CSYS->ID-1]*EXCHANGE_RAD_TO_ANGLE*ramp_t;
 	return *CSYS;
 }
-
-//关于x轴运动轨迹有问题
-#if 0
-/**
-	*@brief 四足固定步长行走规划
-	*/
-CSYS_Handle Foot_X_New_NRTO_Walk(float x,float y,CSYS_Handle *CSYS,Ramp_Typedef *Ramp)
-{
-	static float ramp_t;
-	static float initial_x[4];
-	static float initiaL_y[4];
-	if(!Ramp->flag)
-	{
-		initial_x[CSYS->ID-1] = CSYS->x;
-		initiaL_y[CSYS->ID-1] = CSYS->y;
-	}
-	ramp_t = Slope(Ramp);
-	if(ramp_t < 0.125f)
-	{
-		CSYS->Infer_y = Motor_y - initiaL_y[CSYS->ID-1]	- (2.0f*y*(8.0f*ramp_t-(sinf(4.0f*PI*8.0f*ramp_t))/(4.0f*PI)));
-		CSYS->Infer_x = Motor_x + initial_x[CSYS->ID-1]	+ (x*((16384.0f*powf(ramp_t,4.0f)/(Ramp->RampTime/1000))+(10240.0f*powf(ramp_t,4.0f))+(5120.0f*powf(ramp_t,3.0f))+(8.0f*ramp_t/3.0f)+1.0f));
-	}
-	else if(ramp_t >= 0.125f && ramp_t < 0.25f)
-	{
-		CSYS->Infer_y = Motor_y - initiaL_y[CSYS->ID-1] - (2.0f*y*(1.0f-(8.0f*ramp_t-(sinf(4.0f*PI*8.0f*ramp_t)/(4.0f*PI)))));
-		CSYS->Infer_x = Motor_x + initial_x[CSYS->ID-1] + (x*(8.0f/3.0f*ramp_t-5.0f/3.0f));
-	}
-	else if(ramp_t >= 0.25f)
-	{
-		CSYS->Infer_x = Motor_x + initial_x[CSYS->ID-1] - (x*(8.0f/3.0f*ramp_t-5.0f/3.0f));
-	}
-}
-
-/**
-	*@brief 行走步态阶段一
-	*/
-CSYS_Handle Foot_X_New_Walk_1(float x,float y,CSYS_Handle *CSYS,Ramp_Typedef *Ramp)
-{
-	static float ramp_t;
-	static float initial_x[4];
-	static float initial_y[4];
-	static float Psi,Phi;
-	if(!Ramp->flag)
-	{
-		initial_x[CSYS->ID-1] = CSYS->x;
-		initial_y[CSYS->ID-1] = CSYS->y;
-	}
-	ramp_t = Slope(Ramp);
-	CSYS->Infer_x = Motor_x + initial_x[CSYS->ID-1] + (x*((16384.0f*powf(ramp_t,4.0f)/(Ramp->RampTime/1000))+(10240.0f*powf(ramp_t,4.0f))+(5120.0f*powf(ramp_t,3.0f))+(8.0f*ramp_t/3.0f)+1.0f));
-	CSYS->Infer_y = Motor_y - initial_y[CSYS->ID-1] - (2.0f*y*(8.0f*ramp_t-(sinf(4.0f*PI*8.0f*ramp_t))/(4.0f*PI)));
-	CSYS->Infer_L = sqrtf(CSYS->Infer_x*CSYS->Infer_x+CSYS->Infer_y*CSYS->Infer_y);
-	Psi = asinf(CSYS->Infer_x/CSYS->Infer_L);
-	Phi = acosf((L1*L1 + CSYS->Infer_L*CSYS->Infer_L - L2*L2)/(2*L1*CSYS->Infer_L));
-	CSYS->Infer_theta1 = (Phi - Psi)*EXCHANGE_RAD_TO_ANGLE;
-	CSYS->Infer_theta2 = (Phi + Psi)*EXCHANGE_RAD_TO_ANGLE;
-	return *CSYS;
-}
-
-/**
-	*@biref 四足连续步态
-	*/
-CSYS_Handle *Foot_X_New_Walk(float x,float y,CSYS_Handle CSYS[],Ramp_Global_Typedef *Ramp_global)
-{
-	
-	static float initial_x[4];
-	static float initial_y[4];
-	static uint8_t i;
-	static float Phi,Psi;
-	for(i=0;i<4;i++)
-	{
-		if(!Ramp_global->Ramp[i]->flag)
-		{
-				initial_x[i] = CSYS[i].x;
-				initial_y[i] = CSYS[i].y;
-		}
-		Ramp_global->ramp_t[i] = Slope(Ramp_global->Ramp[i]);
-		if(Ramp_global->ramp_t[i] < 0.125f)
-		{
-			CSYS[i].Infer_x = Motor_x + initial_x[i] 
-											+	(x*((16384.0f*powf(Ramp_global->ramp_t[i],5))
-											+	(10240.0f*powf(Ramp_global->ramp_t[i],4))
-											+	(5120.0f*powf(Ramp_global->ramp_t[i],3))
-											+	(8.0f*Ramp_global->ramp_t[i]/3.0f)
-											+	1.0f));
-			CSYS[i].Infer_y = Motor_y - initial_y[i] 
-											- (2.0f*y*(8.0f*Ramp_global->ramp_t[i]-(sinf(4.0f*PI*8.0f*Ramp_global->ramp_t[i]))/(4.0f*PI)));
-		}
-		else if(Ramp_global->ramp_t[i] >= 0.125f && Ramp_global->ramp_t[i] < 0.25f)
-		{
-			CSYS[i].Infer_x = Motor_x + initial_x[i] 
-											+	(x*((16384.0f*powf(Ramp_global->ramp_t[i],5))
-											+	(10240.0f*powf(Ramp_global->ramp_t[i],4))
-											+	(5120.0f*powf(Ramp_global->ramp_t[i],3))
-											+	(8.0f*Ramp_global->ramp_t[i]/3.0f)
-											+	1.0f));
-			CSYS[i].Infer_y = Motor_y - initial_y[i]
-											-	(2.0f*y*(1.0f-(8.0f*Ramp_global->ramp_t[i]-(sinf(4.0f*PI*8.0f*Ramp_global->ramp_t[i])/(4.0f*PI)))));
-		}
-		else if(Ramp_global->ramp_t[i] >= 0.25f && Ramp_global->ramp_t[i] < 1.0f)
-		{
-			CSYS[i].Infer_x = Motor_x + initial_x[i] - (x*(5.0f/3.0f-8.0f/3.0f*Ramp_global->ramp_t[i]));
-		}
-		else if(Ramp_global->ramp_t[i] == 1.0f)
-		{
-			ResetSlope(Ramp_global->Ramp[i]);
-		}
-		CSYS[i].Infer_L = sqrtf(CSYS[i].Infer_x*CSYS[i].Infer_x+CSYS[i].Infer_y*CSYS[i].Infer_y);
-		Psi = asinf(CSYS[i].Infer_x/CSYS[i].Infer_L);
-		Phi = acosf((L1*L1 + CSYS[i].Infer_L*CSYS[i].Infer_L - L2*L2)/(2*L1*CSYS[i].Infer_L));
-		CSYS[i].Infer_theta1 = (Phi - Psi)*EXCHANGE_RAD_TO_ANGLE;
-		CSYS[i].Infer_theta2 = (Phi + Psi)*EXCHANGE_RAD_TO_ANGLE;
-	}
-	
-	return CSYS;
-}
-
-#endif
 
 CSYS_Handle Foot_New_Walk_RTO(float x,float y,float s,float h,CSYS_Handle *CSYS,Ramp_Typedef *Ramp)
 {

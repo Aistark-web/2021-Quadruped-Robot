@@ -154,57 +154,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 				Foot_Get_CSYS(&CSYS_Foot[j]);
 			Pose_Master();
 			
-//			if(i < 200)
-//			{
-//				i++;
-//			}
-//			else if(i>=200 && i <3000)
-//			{
-//				i++;
-//				Foot_Set();
-//			}
-//			else if(i>=3000)
-//			{
-////				Foot_Run_Test();
-//				Foot_Seesaw();
-//			}
-//			else if(i>=3000 && i < 5000)
-//			{
-//				i++;
-//				Foot_Run_Ready();
-//			}
-//			else if(i>=5000)
-//			{
-//				
-////				Foot_Calandria();
-//				Foot_Run();
-//			}
-//			else if(i>=1500)
-//			{
-//				Foot_Turn_Left();
-//			}
-//			else if(i>=3000 && i<4000)
-//			{
-//				i++;
-//				Front_Ready_Jump();
-//			}
-//			else if(i>=4000)
-//			{
-//				Front_Jump();
-//			}
-//			else if(i >= 800 && i < 1000)
-//			{
-//				i++;
-//				Foot_Start_Walk();
-//			}
-//			else if(i>=1000)
-//			{
-//				i=1000;
-//				Foot_Run();
-//			}
+			
 		}
 		static uint32_t Reset_time;
-		static uint32_t Run_Stop_time;
 		if(DataPack.Key.Left_Rocker == 1 && DataPack.Key.Right_Rocker == 1)
 		{
 			

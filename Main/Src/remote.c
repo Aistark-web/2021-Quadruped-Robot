@@ -47,7 +47,6 @@ void Remote_Deal()
 	static uint8_t Right_Key_Down_Memory;
 	static uint8_t Right_Key_Left_Memory;
 	static uint8_t Right_Key_Right_Memory;
-	static uint32_t time;
 	if(DataPack.Key.Left_Key_Up == 1)
 	{
 		if(Remote_State.Remote_Current_State == Remote_Foot_None)
@@ -58,40 +57,6 @@ void Remote_Deal()
 		else if(Remote_State.Remote_Current_State == Remote_Foot_Seesaw && Left_Key_Up_Memory == 0)
 		{
 			Remote_State_Last_Current_Update(Remote_Foot_Seesaw_Stop);
-		}
-	}
-	else if(DataPack.Key.Left_Key_Down == 1)
-	{
-		//暂不启用
-//		if(Remote_State.Remote_Current_State == Remote_Foot_None)
-//		{
-//			Remote_State_Last_Current_Update(Remote_Foot_Step);
-//		}
-	}
-	else if(DataPack.Key.Left_Key_Left == 1)
-	{
-
-		if(Remote_State.Remote_Current_State == Remote_Foot_None)
-		{
-			Remote_State_Last_Current_Update(Remote_Foot_Rocker_Fast_Walk);
-		}
-		
-	}
-	else if(DataPack.Key.Left_Key_Right == 1)
-	{
-		if(Remote_State.Remote_Current_State == Remote_Foot_None)
-		{
-			Remote_State_Last_Current_Update(Remote_Foot_Run_Ready);
-			Left_Key_Right_Memory = 1;
-		}
-		else if(Remote_State.Remote_Current_State == Remote_Foot_Run_Ready && Left_Key_Right_Memory == 0)
-		{
-			Remote_State_Last_Current_Update(Remote_Foot_Cobble);
-			Left_Key_Right_Memory = 1;
-		}
-		else if(Remote_State.Remote_Current_State == Remote_Foot_Cobble && Left_Key_Right_Memory == 0)
-		{
-			Remote_State_Last_Current_Update(Remote_Foot_Cobble_Stop);
 		}
 	}
 	else if(DataPack.Key.Right_Key_Up == 1)												//初始化/归位 按键
@@ -106,74 +71,15 @@ void Remote_Deal()
 		{
 			Remote_State_Last_Current_Update(Remote_Foot_Reset);
 		}
-		//急停操作
-		switch(Remote_State.Remote_Current_State)
-		{
-			case Remote_Foot_Run_Ready:
-			{
-				Remote_State_Last_Current_Update(Remote_Foot_Emergency_Stop);
-				Right_Key_Up_Memory = 1;
-				break;
-			}
-			case Remote_Foot_Run:
-			{
-				Remote_State_Last_Current_Update(Remote_Foot_Emergency_Stop);
-				Right_Key_Up_Memory = 1;
-				break;
-			}
-			case Remote_Foot_Calandria:
-			{
-				Remote_State_Last_Current_Update(Remote_Foot_Emergency_Stop);
-				Right_Key_Up_Memory = 1;
-				break;
-			}
-			case Remote_Foot_Seesaw:
-			{
-				Remote_State_Last_Current_Update(Remote_Foot_Emergency_Stop);
-				Right_Key_Up_Memory = 1;
-				break;
-			}
-		}
-	}
-	else if(DataPack.Key.Right_Key_Down == 1)											//跳跃按键 跑完点后跳跃
-	{
-		if(Remote_State.Remote_Current_State == Remote_Foot_None)
-		{
-			Remote_State_Last_Current_Update(Remote_Foot_Jump);
-		}
-	}
-	else if(DataPack.Key.Right_Key_Left == 1)											//跑按键		第一次按
-	{
-		if(Remote_State.Remote_Current_State == Remote_Foot_None)
-		{
-			Remote_State_Last_Current_Update(Remote_Foot_Run_Ready);
-			Right_Key_Left_Memory = 1;															
-		}
-		else if(Remote_State.Remote_Current_State == Remote_Foot_Run_Ready && Right_Key_Left_Memory == 0)
-		{
-			Right_Key_Left_Memory = 1;
-			Remote_State_Last_Current_Update(Remote_Foot_Run);
-		}
-		else if(Remote_State.Remote_Current_State == Remote_Foot_Run && Right_Key_Left_Memory == 0)
-		{
-			Remote_State_Last_Current_Update(Remote_Foot_Run_Stop);
-		}
-	}
-	else if(DataPack.Key.Right_Key_Right == 1)
-	{
-		if(Remote_State.Remote_Current_State == Remote_Foot_None)
-		{
-			Remote_State_Last_Current_Update(Remote_Foot_Calandria);
-		}
 	}
 	else if(DataPack.Key.Left_Switch == 1 && Remote_State.Remote_Current_State == Remote_Foot_None)
 	{
 		Remote_State_Last_Current_Update(Remote_Foot_Rocker_Fast_Walk);
 	}
-//	else if(DataPack.Key.Left_Switch == 2 && Remote_State.Remote_Current_State == Remote_Foot_None)
-//	{
-//		Remote_State_Last_Current_Update(Remote_Foot_Rocker_Run);
-//	}
+	else if(DataPack.Key.Left_Switch == 2 && Remote_State.Remote_Current_State == Remote_Foot_None)
+	{
+		Remote_State_Last_Current_Update(Remote_Foot_Rocker_Run);
+	}
 	else if(DataPack.Key.Left_Switch == 0 && (Remote_State.Remote_Current_State == Remote_Foot_Rocker_Fast_Walk || 
 					Remote_State.Remote_Current_State == Remote_Foot_Rocker_Run))		
 	{
